@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importador de Dados - Google Sheets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; }
+        .btn:hover { background: #2563eb; }
+        .input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin: 10px 0; }
+        textarea { min-height: 200px; font-family: monospace; }
+        .success { background: #d1fae5; color: #065f46; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { background: #dbeafe; color: #1e40af; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6">📊 Importador de Dados do Google Sheets</h1>
+        
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Opção 1: Importar via Link CSV Publicado</h2>
+            <div class="info">
+                <strong>Como publicar sua planilha como CSV:</strong>
+                <ol class="list-decimal ml-5 mt-2">
+                    <li>Abra sua planilha no Google Sheets</li>
+                    <li>Vá em <strong>Arquivo → Compartilhar → Publicar na web</strong></li>
+                    <li>Selecione o formato <strong>Valores separados por vírgulas (.csv)</strong></li>
+                    <li>Escolha a aba que deseja publicar</li>
+                    <li>Clique em <strong>Publicar</strong> e copie o link</li>
+                </ol>
+            </div>
+            <input type="text" id="csvUrl" class="input" placeholder="Cole aqui o link do CSV publicado do Google Sheets">
+            <button class="btn" onclick="importarCSV()">Importar do CSV</button>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Opção 2: Colar Dados Manualmente</h2>
+            <p class="mb-2">Copie e cole os dados da planilha aqui (formato CSV):</p>
+            <textarea id="csvData" class="input" placeholder="Cole aqui os dados no formato CSV (separados por vírgulas)"></textarea>
+            <button class="btn" onclick="processarDadosCSV()">Processar Dados CSV</button>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Opção 3: Atualizar Manualmente o JSON</h2>
+            <p class="mb-2">Se preferir, você pode atualizar diretamente o arquivo <code>dados.json</code> seguindo o guia em <code>INSTRUCOES.md</code></p>
+            <button class="btn" onclick="window.open('INSTRUCOES.md', '_blank')">Abrir Instruções</button>
+        </div>
+
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        async function importarCSV() {
+            const url = document.getElementById('csvUrl').value;
+            if (!url) {
+                mostrarErro('Por favor, insira o link do CSV');
+                return;
+            }
+
+            try {
+                const response = await fetch(url);
+                const csvText = await response.text();
+                processarCSV(csvText);
+            } catch (error) {
+                mostrarErro('Erro ao importar CSV: ' + error.message);
+            }
+        }
+
+        function processarDadosCSV() {
+            const csvData = document.getElementById('csvData').value;
+            if (!csvData) {
+                mostrarErro('Por favor, cole os dados CSV');
+                return;
+            }
+            processarCSV(csvData);
+        }
+
+        function processarCSV(csvText) {
+            const linhas = csvText.split('\n').filter(linha => linha.trim());
+            const dados = linhas.map(linha => linha.split(',').map(celula => celula.trim()));
+            
+            mostrarSucesso(`Dados importados! ${dados.length} linhas encontradas.`);
+            console.log('Dados importados:', dados);
+            
+            // Aqui você pode processar os dados e atualizar o dados.json
+            // Por enquanto, apenas mostramos os dados no console
+            mostrarDadosImportados(dados);
+        }
+
+        function mostrarDadosImportados(dados) {
+            const resultado = document.getElementById('resultado');
+            let html = '<div class="card"><h3 class="text-lg font-semibold mb-2">Dados Importados:</h3>';
+            html += '<pre class="bg-gray-100 p-4 rounded overflow-auto max-h-96">';
+            html += JSON.stringify(dados, null, 2);
+            html += '</pre>';
+            html += '<p class="mt-4 text-sm text-gray-600">Copie estes dados e use-os para atualizar o arquivo dados.json manualmente, ou implemente a lógica de conversão automática.</p>';
+            html += '</div>';
+            resultado.innerHTML = html;
+        }
+
+        function mostrarSucesso(mensagem) {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = `<div class="success">✅ ${mensagem}</div>`;
+        }
+
+        function mostrarErro(mensagem) {
+            const resultado = document.getElementById('resultado');
+            resultado.innerHTML = `<div class="error">❌ ${mensagem}</div>`;
+        }
+    </script>
+</body>
+</html>
+
+

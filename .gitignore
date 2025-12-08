@@ -1,0 +1,34 @@
+# Arquivos temporários do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Ambientes virtuais
+venv/
+env/
+ENV/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Arquivos de backup
+*.bak
+*~
+
+# Arquivos de dados sensíveis (se necessário)
+# dados.json  # Descomente se não quiser versionar os dados
+
+

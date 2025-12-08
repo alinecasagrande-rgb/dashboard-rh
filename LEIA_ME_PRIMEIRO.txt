@@ -1,0 +1,35 @@
+================================================================================
+                    IMPORTANTE - LEIA ANTES DE USAR!
+================================================================================
+
+NAO ABRA O index.html DIRETAMENTE NO NAVEGADOR!
+
+Isso causa erro porque o navegador bloqueia o carregamento de arquivos locais.
+
+================================================================================
+                        SOLUCAO CORRETA:
+================================================================================
+
+1. CLIQUE DUAS VEZES NO ARQUIVO: ABRIR_DASHBOARD.bat
+
+   OU
+
+2. Execute no terminal: python servidor_local.py
+
+================================================================================
+                        O QUE ACONTECE:
+================================================================================
+
+- O servidor local inicia automaticamente
+- O navegador abre automaticamente com o dashboard funcionando
+- O dashboard carrega todos os dados corretamente
+
+================================================================================
+                        PARA PARAR O SERVIDOR:
+================================================================================
+
+Pressione CTRL+C no terminal
+
+================================================================================
+
+

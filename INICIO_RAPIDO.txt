@@ -1,0 +1,45 @@
+================================================================================
+                    DASHBOARD DE RECURSOS HUMANOS
+                        INICIO RAPIDO
+================================================================================
+
+IMPORTANTE: NAO ABRA O index.html DIRETAMENTE!
+
+================================================================================
+                        COMO USAR:
+================================================================================
+
+1. CLIQUE DUAS VEZES NO ARQUIVO:
+
+   >>> ABRIR_DASHBOARD.bat <<<
+
+2. Aguarde alguns segundos
+
+3. O navegador abrira automaticamente com o dashboard funcionando!
+
+================================================================================
+                        PARA ATUALIZAR DADOS:
+================================================================================
+
+1. Atualize a planilha do Google Sheets
+
+2. CLIQUE DUAS VEZES NO ARQUIVO:
+
+   >>> ATUALIZAR_DADOS.bat <<<
+
+3. Aguarde a mensagem de sucesso
+
+4. Recarregue o dashboard no navegador (F5)
+
+================================================================================
+                        ARQUIVOS IMPORTANTES:
+================================================================================
+
+- ABRIR_DASHBOARD.bat      -> Use para abrir o dashboard
+- ATUALIZAR_DADOS.bat      -> Use para atualizar dados da planilha
+- index.html               -> NAO abra diretamente!
+- dados.json               -> Dados do dashboard (atualizado automaticamente)
+
+================================================================================
+
+

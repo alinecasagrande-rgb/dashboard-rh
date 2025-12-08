@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Indicadores de RH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            min-height: 100vh;
+        }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            height: 45vh; 
+            min-height: 350px;
+        }
+        .nav-link { 
+            padding: 1rem 1.5rem; 
+            border-bottom: 3px solid transparent; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            font-weight: 500;
+            color: #64748b;
+            position: relative;
+            font-size: 0.95rem;
+        }
+        .nav-link.active { 
+            border-bottom-color: #ffffff; 
+            color: #ffffff;
+            font-weight: 600;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), transparent);
+        }
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+        .kpi-card { 
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid rgba(226, 232, 240, 0.8); 
+            border-radius: 1rem; 
+            padding: 2rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #1e40af);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        .kpi-card:hover::before {
+            opacity: 1;
+        }
+        .kpi-card-premium {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+        }
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        .kpi-value {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .kpi-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border-radius: 0.5rem;
+        }
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .table-container table {
+            width: 100%;
+            text-align: left;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+        .table-container thead {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: #ffffff;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        .table-container th, .table-container td {
+            padding: 1rem 1.25rem;
+        }
+        .table-container tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .table-container tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .table-container tbody tr:hover {
+            background-color: #f1f5f9;
+            transform: scale(1.01);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .table-container .header-row th {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-top: 2px solid #3b82f6;
+        }
+        .table-container .total-row td {
+            font-weight: 700;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #0f172a;
+            font-size: 0.95rem;
+        }
+        .segment-table {
+            margin-bottom: 2rem;
+        }
+        .header-executive {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid #3b82f6;
+            display: inline-block;
+        }
+        .section-title.mb-0 {
+            margin-bottom: 0;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .badge-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .content-section {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <header class="header-executive sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4 md:px-10 flex justify-between items-center py-5">
+            <div class="flex items-center space-x-4">
+                <div class="bg-white rounded-xl p-2 shadow-md" id="logo-container" style="min-width: 50px; min-height: 50px; display: flex; align-items: center; justify-content: center;">
+                    <img id="logo-img" src="logo.png" alt="Logo da Empresa" class="h-10 w-auto" 
+                         onerror="this.style.display='none'; document.getElementById('logo-placeholder').style.display='flex';"
+                         style="max-width: 200px; max-height: 40px; object-fit: contain;">
+                    <div id="logo-placeholder" style="display:none; align-items:center; justify-content:center; width:40px; height:40px; background:#3b82f6; border-radius:8px; color:white; font-weight:bold; font-size:18px;">RH</div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Painel Executivo de RH</h1>
+                    <p class="text-sm text-blue-100 mt-0.5">Dashboard de Indicadores Estratégicos</p>
+                </div>
+            </div>
+            <div id="last-update-container" class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/30">
+                <div class="text-xs text-blue-100 uppercase tracking-wide mb-1">Competência</div>
+                <div id="kpi-competencia" class="text-lg font-bold text-white"></div>
+            </div>
+        </div>
+        <nav class="container mx-auto px-4 md:px-10 flex border-t border-blue-400/30 bg-blue-600/10 backdrop-blur-sm">
+            <a href="#" id="nav-visao-geral" class="nav-link active text-white"><i class="fas fa-chart-line mr-2"></i>Visão Geral</a>
+            <a href="#" id="nav-colaboradores" class="nav-link text-blue-100"><i class="fas fa-users mr-2"></i>Colaboradores</a>
+            <a href="#" id="nav-movimentacao" class="nav-link text-blue-100"><i class="fas fa-exchange-alt mr-2"></i>Movimentação</a>
+            <a href="#" id="nav-detalhes" class="nav-link text-blue-100"><i class="fas fa-building mr-2"></i>Detalhes por Est.</a>
+            <a href="#" id="nav-gerentes" class="nav-link text-blue-100"><i class="fas fa-user-tie mr-2"></i>Por Gerente</a>
+            <a href="#" id="nav-segmento" class="nav-link text-blue-100"><i class="fas fa-sitemap mr-2"></i>Por Segmento</a>
+            <a href="#" id="nav-turnover" class="nav-link text-blue-100"><i class="fas fa-sync-alt mr-2"></i>Turnover</a>
+        </nav>
+    </header>
+    <main class="container mx-auto p-6 md:p-10">
+        <div id="loading-message" class="loading">
+            <i class="fas fa-spinner fa-spin fa-2x mb-4"></i>
+            <p>Carregando dados do dashboard...</p>
+        </div>
+        <div id="error-message" class="error hidden">
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800 mb-2">
+                            ⚠️ ERRO: Você está abrindo o arquivo diretamente no navegador!
+                        </h3>
+                        <div class="text-sm text-red-700">
+                            <p class="font-bold mb-2">SOLUÇÃO:</p>
+                            <ol class="list-decimal ml-5 space-y-1">
+                                <li><strong>Feche esta janela do navegador</strong></li>
+                                <li><strong>Clique duas vezes no arquivo:</strong> <code class="bg-red-100 px-2 py-1 rounded">ABRIR_DASHBOARD.bat</code></li>
+                                <li>O servidor local iniciará e o dashboard abrirá automaticamente funcionando!</li>
+                            </ol>
+                            <p class="mt-3 font-semibold">OU execute no terminal:</p>
+                            <code class="bg-red-100 px-2 py-1 rounded block mt-1">python servidor_local.py</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">
+                <strong>Por que isso acontece?</strong> Navegadores bloqueiam o carregamento de arquivos locais por segurança. 
+                O servidor local resolve isso permitindo que o dashboard funcione normalmente.
+            </p>
+        </div>
+        <div id="content-visao-geral" class="content-section space-y-8 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="kpi-card kpi-card-premium">
+                    <div class="kpi-icon bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="kpi-label">Total de Colaboradores</div>
+                    <div id="kpi-total-colaboradores" class="kpi-value">0</div>
+                    <div class="text-xs text-gray-500 mt-2 flex items-center">
+                        <i class="fas fa-building mr-1"></i>
+                        <span>Ativos no período</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="kpi-label">Total de Admissões</div>
+                    <div id="kpi-total-admissoes" class="text-5xl font-bold text-green-600 mt-2">0</div>
+                    <div class="text-xs text-gray-500 mt-2 flex items-center">
+                        <i class="fas fa-arrow-up mr-1 text-green-500"></i>
+                        <span>Crescimento de equipe</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon bg-gradient-to-br from-red-500 to-rose-600 text-white">
+                        <i class="fas fa-user-minus"></i>
+                    </div>
+                    <div class="kpi-label">Total de Desligamentos</div>
+                    <div id="kpi-total-desligamentos" class="text-5xl font-bold text-red-600 mt-2">0</div>
+                    <div class="text-xs text-gray-500 mt-2 flex items-center">
+                        <i class="fas fa-arrow-down mr-1 text-red-500"></i>
+                        <span>Movimentação de saída</span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-3 kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-building text-blue-600"></i>
+                        </div>
+                        <h3 id="estabelecimento-chart-title" class="section-title mb-0"></h3>
+                    </div>
+                    <div class="chart-container"><canvas id="colaboradoresEstabelecimentoChart"></canvas></div>
+                </div>
+                <div class="lg:col-span-2 kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-purple-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-birthday-cake text-purple-600"></i>
+                        </div>
+                        <h3 class="section-title mb-0">Colaboradores por Faixa Etária</h3>
+                    </div>
+                    <div class="chart-container"><canvas id="ageDistributionChart"></canvas></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-3 kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-chart-line text-green-600"></i>
+                        </div>
+                        <h3 class="section-title mb-0">Admissões vs. Desligamentos</h3>
+                    </div>
+                    <div class="chart-container"><canvas id="admissoesDesligamentosChart"></canvas></div>
+                </div>
+                <div class="lg:col-span-2 kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-pink-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-venus-mars text-pink-600"></i>
+                        </div>
+                        <h3 class="section-title mb-0">Distribuição por Gênero</h3>
+                    </div>
+                    <div class="chart-container"><canvas id="genderDistributionChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div id="content-colaboradores" class="content-section hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-chart-area text-blue-600"></i>
+                        </div>
+                        <h3 class="section-title mb-0">Evolução do Total de Colaboradores</h3>
+                    </div>
+                    <div class="chart-container"><canvas id="totalColaboradoresChart"></canvas></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-teal-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-table text-teal-600"></i>
+                        </div>
+                        <h3 class="section-title mb-0">Evolução Mensal por Estabelecimento</h3>
+                    </div>
+                    <div class="table-container"><table id="colaboradoresEstabelecimentoTable"></table></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="kpi-card text-center">
+                    <div class="kpi-icon bg-gradient-to-br from-indigo-500 to-indigo-600 text-white mx-auto">
+                        <i class="fas fa-wheelchair"></i>
+                    </div>
+                    <div class="kpi-label" id="pcd-card-title"></div>
+                    <div id="kpi-total-pcd" class="kpi-value">0</div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-heart mr-1 text-indigo-500"></i>
+                        Inclusão e Diversidade
+                    </div>
+                </div>
+                <div class="kpi-card text-center">
+                    <div class="kpi-icon bg-gradient-to-br from-amber-500 to-orange-600 text-white mx-auto">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="kpi-label" id="aprendiz-card-title"></div>
+                    <div id="kpi-total-aprendizes" class="kpi-value">0</div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-lightbulb mr-1 text-amber-500"></i>
+                        Programa de Aprendizagem
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="content-movimentacao" class="content-section hidden space-y-8">
+            <div class="kpi-card">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-100 rounded-lg p-2 mr-3">
+                        <i class="fas fa-arrow-up text-green-600"></i>
+                    </div>
+                    <h3 class="section-title mb-0">Evolução de Admissões</h3>
+                </div>
+                <div class="chart-container"><canvas id="admissoesChart"></canvas></div>
+            </div>
+            <div class="kpi-card">
+                <div class="flex items-center mb-4">
+                    <div class="bg-red-100 rounded-lg p-2 mr-3">
+                        <i class="fas fa-arrow-down text-red-600"></i>
+                    </div>
+                    <h3 class="section-title mb-0">Evolução de Desligamentos</h3>
+                </div>
+                <div class="chart-container"><canvas id="desligamentosChart"></canvas></div>
+            </div>
+        </div>
+        <div id="content-detalhes" class="content-section hidden">
+            <div class="kpi-card">
+                <div class="flex items-center mb-4">
+                    <div class="bg-slate-100 rounded-lg p-2 mr-3">
+                        <i class="fas fa-table text-slate-600"></i>
+                    </div>
+                    <h3 class="section-title mb-0">Tabela Geral de Evolução</h3>
+                </div>
+                <div class="table-container"><table id="evolutionTable"></table></div>
+            </div>
+        </div>
+        <div id="content-gerentes" class="content-section hidden">
+            <div class="kpi-card">
+                <div class="flex items-center mb-4">
+                    <div class="bg-indigo-100 rounded-lg p-2 mr-3">
+                        <i class="fas fa-user-tie text-indigo-600"></i>
+                    </div>
+                    <h3 class="section-title mb-0">Evolução por Gerente</h3>
+                </div>
+                <div id="gerentesEvolutionTable" class="space-y-8 table-container"></div>
+            </div>
+        </div>
+        <div id="content-segmento" class="content-section hidden">
+            <div class="kpi-card">
+                <div class="flex items-center mb-4">
+                    <div class="bg-cyan-100 rounded-lg p-2 mr-3">
+                        <i class="fas fa-sitemap text-cyan-600"></i>
+                    </div>
+                    <h3 class="section-title mb-0">Evolução por Segmento (Total)</h3>
+                </div>
+                <div id="segmentoEvolutionTable" class="table-container"></div>
+            </div>
+        </div>
+        <div id="content-turnover" class="content-section hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-orange-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-sync-alt text-orange-600"></i>
+                        </div>
+                        <h3 id="turnover-chart-title" class="section-title mb-0"></h3>
+                    </div>
+                    <div class="chart-container"><canvas id="turnoverChart"></canvas></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-amber-100 rounded-lg p-2 mr-3">
+                            <i class="fas fa-chart-bar text-amber-600"></i>
+                        </div>
+                        <h3 id="turnover-table-title" class="section-title mb-0"></h3>
+                    </div>
+                    <div id="turnoverTable" class="table-container"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="dashboard.js"></script>
+    <script>
+        // Garantir que o logo seja carregado corretamente
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoImg = document.getElementById('logo-img');
+            const placeholder = document.getElementById('logo-placeholder');
+            
+            if (logoImg) {
+                // Lista de formatos possíveis para tentar
+                const formatos = ['logo.png', 'logo.jpg', 'logo.jpeg', 'logo.svg', 'logo.png.jpg'];
+                let tentativaAtual = 0;
+                
+                function tentarCarregarLogo() {
+                    if (tentativaAtual < formatos.length) {
+                        const img = new Image();
+                        img.onload = function() {
+                            logoImg.src = formatos[tentativaAtual];
+                            logoImg.style.display = 'block';
+                            placeholder.style.display = 'none';
+                        };
+                        img.onerror = function() {
+                            tentativaAtual++;
+                            tentarCarregarLogo();
+                        };
+                        img.src = formatos[tentativaAtual];
+                    } else {
+                        // Se nenhum logo funcionar, mostra placeholder
+                        logoImg.style.display = 'none';
+                        placeholder.style.display = 'flex';
+                    }
+                }
+                
+                // Verifica se o logo atual carregou
+                logoImg.onerror = function() {
+                    tentarCarregarLogo();
+                };
+                
+                // Se o logo não carregou após 1 segundo, tenta outros formatos
+                setTimeout(function() {
+                    if (!logoImg.complete || logoImg.naturalHeight === 0) {
+                        tentarCarregarLogo();
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
+
