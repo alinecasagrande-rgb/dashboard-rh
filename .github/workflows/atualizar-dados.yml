@@ -1,0 +1,45 @@
+name: Atualizar Dados do Google Sheets
+
+on:
+  schedule:
+    # Executa diariamente às 8h (horário UTC-3 = 11h UTC)
+    - cron: '0 11 * * *'
+  workflow_dispatch: # Permite executar manualmente
+
+jobs:
+  atualizar-dados:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+      
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Baixar e processar dados do Google Sheets
+      run: |
+        python processar_dados_final.py
+        
+    - name: Verificar se dados.json foi modificado
+      id: verificar-mudancas
+      run: |
+        if [ -n "$(git status --porcelain dados.json)" ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit e Push das mudanças
+      if: steps.verificar-mudancas.outputs.changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add dados.json
+        git commit -m "Atualização automática de dados do Google Sheets [skip ci]"
+        git push
+
+
+
