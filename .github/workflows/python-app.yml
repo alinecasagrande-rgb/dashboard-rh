@@ -36,4 +36,9 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        # Skip if no test files exist
+        if [ -z "$(find . -name 'test_*.py' -o -name '*_test.py')" ]; then
+          echo "No test files found - skipping pytest"
+        else
+          pytest
+        fi
