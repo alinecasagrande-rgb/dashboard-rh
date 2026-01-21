@@ -7,7 +7,8 @@ import csv
 import io
 
 # Link CSV da planilha do Google Sheets
-CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSf71N2ZusoPVlFxeAwG0yLMRQi3rMiYsf422EnY-zU-NrGf3y142prw-9_kOyXfNrsDQ3kkxKF09uw/pub?output=csv"
+# Link atualizado para a planilha correta
+CSV_URL = "https://docs.google.com/spreadsheets/d/1_JoETFEN0c5554x3_C1jjAgGu_2yEBtSqiZCEnQZGuQ/export?format=csv&gid=0"
 
 def baixar_dados():
     """Baixa os dados do Google Sheets"""
@@ -112,6 +113,12 @@ def atualizar_dados_json(dados_processados, meses_planilha):
         
         # Mapeia meses
         meses_json = dados['labels']
+        
+        # Adiciona novos meses que não existem nos labels
+        for mes in meses_planilha:
+            if mes not in meses_json:
+                meses_json.append(mes)
+                print(f"  Novo mes adicionado: {mes}")
         
         # Atualiza colaboradores
         estabelecimentos = dados['colaboradores']['estabelecimentos']
